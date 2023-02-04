@@ -7,4 +7,4 @@ WORKDIR $APP_HOME
 COPY . ./
 
 RUN pip install --upgrade pip
-RUN pip install -r ./swapper/requirements.txt -r ./swapper/dev-requirements.txt
+RUN pip install -r ./swapper/requirements/requirements.txt -r ./swapper/requirements/dev-requirements.txt
