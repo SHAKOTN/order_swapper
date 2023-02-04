@@ -1,0 +1,12 @@
+version: "3"
+services:
+
+  order_swapper:
+    build:
+      context: .
+    container_name: order_swapper
+    command: ["python", "main.py"]
+    env_file:
+      - .env
+    volumes:
+      - ./:/order_swapper
