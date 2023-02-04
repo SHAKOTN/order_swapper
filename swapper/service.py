@@ -18,6 +18,12 @@ from swapper.constants import SYMBOL
 from swapper.constants import TIME_IN_FORCE
 
 SECRET_KEY = os.getenv("BINANCE_SECRET_KEY")
+API_KEY = os.getenv("BINANCE_API_KEY")
+
+HEADERS = {
+    "X-MBX-APIKEY": API_KEY,
+    "Content-Type": "application/x-www-form-urlencoded",
+}
 
 
 def calculate_signature(data: dict) -> str:
@@ -38,7 +44,6 @@ async def place_order(side: Union[SIDE_BID, SIDE_ASK], price: Decimal) -> dict:
     :param side: The side of the order, either "BUY" or "SELL"
     :param price: The price of the order
     """
-    api_key = os.getenv("BINANCE_API_KEY")
     # Build the request body
     data = {
         "symbol": SYMBOL,
@@ -48,20 +53,42 @@ async def place_order(side: Union[SIDE_BID, SIDE_ASK], price: Decimal) -> dict:
         "quantity": QUANTITY,
         "price": price
     }
-    headers = {
-        "X-MBX-APIKEY": api_key,
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{BINANCE_REST_API_BASE_URL}/order",
             # Send the signature as a query param
             params={"signature": calculate_signature(data)},
-            headers=headers,
+            headers=HEADERS,
             data=data
         )
         # TODO: Better error handling
         response.raise_for_status()
 
     return response.json()
+
+
+async def get_order(order_id: int) -> dict:
+    """
+    Get an order from Binance
+    :param order_id: The order ID
+    """
+    # Build the request body
+    params = {
+        "symbol": "BTCUSDT",
+        "orderId": order_id,
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{BINANCE_REST_API_BASE_URL}/order",
+            # Send the signature as a query param
+            params={**params, "signature": calculate_signature(params)},
+            headers=HEADERS,
+        )
+        # TODO: Better error handling
+        response.raise_for_status()
+    return response.json()
+
+
+# TODO: Cancel order
