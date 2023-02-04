@@ -4,7 +4,9 @@ Module that interacts with Binance API
 import hashlib
 import hmac
 import os
+import time
 from decimal import Decimal
+from typing import List
 from typing import Union
 
 import httpx
@@ -17,8 +19,8 @@ from swapper.constants import SIDE_BID
 from swapper.constants import SYMBOL
 from swapper.constants import TIME_IN_FORCE
 
-SECRET_KEY = os.getenv("BINANCE_SECRET_KEY")
-API_KEY = os.getenv("BINANCE_API_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY")
+API_KEY = os.getenv("API_KEY")
 
 HEADERS = {
     "X-MBX-APIKEY": API_KEY,
@@ -51,7 +53,8 @@ async def place_order(side: Union[SIDE_BID, SIDE_ASK], price: Decimal) -> dict:
         "type": ORDER_TYPE,
         "timeInForce": TIME_IN_FORCE,
         "quantity": QUANTITY,
-        "price": price
+        "price": round(price, 2),
+        "timestamp": str(int(time.time() * 1000)),
     }
 
     async with httpx.AsyncClient() as client:
@@ -77,6 +80,7 @@ async def get_order(order_id: int) -> dict:
     params = {
         "symbol": "BTCUSDT",
         "orderId": order_id,
+        "timestamp": str(int(time.time() * 1000)),
     }
 
     async with httpx.AsyncClient() as client:
@@ -87,6 +91,30 @@ async def get_order(order_id: int) -> dict:
             headers=HEADERS,
         )
         # TODO: Better error handling
+        response.raise_for_status()
+    return response.json()
+
+
+async def get_all_orders() -> List[dict]:
+    """
+    Get all orders from Binance
+    """
+    # Build the request body
+    params = {
+        "symbol": "BTCUSDT",
+        "timestamp": str(int(time.time() * 1000)),
+        # Get all orders from the last 48 hours
+        "startTime": str(int(time.time() * 1000) - 24 * 60 * 60 * 1000),
+        "endTime": str(int(time.time() * 1000)),
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{BINANCE_REST_API_BASE_URL}/allOrders",
+            # Send the signature as a query param
+            params={**params, "signature": calculate_signature(params)},
+            headers=HEADERS,
+        )
         response.raise_for_status()
     return response.json()
 
