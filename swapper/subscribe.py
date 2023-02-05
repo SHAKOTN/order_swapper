@@ -29,7 +29,7 @@ async def subscribe(websocket: websockets.WebSocketClientProtocol) -> None:
     Subscribe to the BTCUSDT 1s kline stream. Continuously listen to the websocket and calculate
     spread changes.
 
-    There are several cases:
+    There are 3 cases:
     1. There are no existing orders on the exchange. We need to place new orders for ask and bid
     2. There is one ask(or bid) order active, need to cancel it(if needed) and place a new one
     3. There are existing orders on the exchange. We need to load them to state and monitor if
@@ -77,9 +77,9 @@ async def subscribe(websocket: websockets.WebSocketClientProtocol) -> None:
             )
             logger.info(
                 f"Placed BID order: {initial_orders_placement[0]['orderId']} "
-                f"with {curr_bid_price} price"
+                f"with ${round(curr_bid_price, 2)} price"
                 f"Placed ASK order: {initial_orders_placement[0]['orderId']} "
-                f"with {curr_ask_price} price"
+                f"with ${round(curr_ask_price, 2)} price"
             )
         else:
             # There are active orders. Check if they need to be cancelled and replaced
@@ -92,12 +92,14 @@ async def subscribe(websocket: websockets.WebSocketClientProtocol) -> None:
                 await cancel_order(bid_order['orderId'])
                 new_order = await place_order(SIDE_BID, curr_bid_price)
                 logger.info(
-                    f"Placed BID order: {new_order['orderId']} with {curr_bid_price} price"
+                    f"Placed BID order: {new_order['orderId']} "
+                    f"with ${round(curr_bid_price, 2)} price"
                 )
             elif not bid_order:
                 new_order = await place_order(SIDE_BID, curr_bid_price)
                 logger.info(
-                    f"Placed BID order: {new_order['orderId']} with {curr_bid_price} price"
+                    f"Placed BID order: {new_order['orderId']} "
+                    f"with ${round(curr_bid_price, 2)} price"
                 )
             ask_order = state.get_active_ask_order()
             if ask_order and order_at_risk(curr_bid_price, curr_ask_price, ask_order):
@@ -108,10 +110,12 @@ async def subscribe(websocket: websockets.WebSocketClientProtocol) -> None:
                 await cancel_order(ask_order['orderId'])
                 new_order = await place_order(SIDE_ASK, curr_ask_price)
                 logger.info(
-                    f"Placed ASK order: {new_order['orderId']} with {curr_ask_price} price"
+                    f"Placed ASK order: {new_order['orderId']} "
+                    f"with ${round(curr_ask_price, 2)} price"
                 )
             elif not ask_order:
                 new_order = await place_order(SIDE_ASK, curr_ask_price)
                 logger.info(
-                    f"Placed ASK order: {new_order['orderId']} with {curr_ask_price} price"
+                    f"Placed ASK order: {new_order['orderId']} "
+                    f"with ${round(curr_ask_price, 2)} price"
                 )

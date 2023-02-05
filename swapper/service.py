@@ -14,6 +14,7 @@ from typing import Union
 import httpx
 
 from swapper.constants import BINANCE_REST_API_BASE_URL
+from swapper.constants import BINANCE_TIME_API_URL
 from swapper.constants import ORDER_TYPE
 from swapper.constants import QUANTITY
 from swapper.constants import SIDE_ASK
@@ -106,7 +107,7 @@ async def cancel_order(order_id: int) -> Optional[dict]:
     """
     # Get Binance server time to avoid timestamp errors
     async with httpx.AsyncClient() as client:
-        time_response = await client.get("https://api.binance.com/api/v3/time")
+        time_response = await client.get(BINANCE_TIME_API_URL)
         if time_response.status_code == 200:
             timestamp = time_response.json()["serverTime"]
         else:
