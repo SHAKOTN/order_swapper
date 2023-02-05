@@ -1,7 +1,6 @@
 """
 Module that interacts with Binance API
 """
-import asyncio
 import hashlib
 import hmac
 import logging

@@ -26,7 +26,7 @@ def calculate_ask_price_based_on_spread(high_price: Decimal, spread: Decimal) ->
     return Decimal(high_price * (1 + spread / 100))
 
 
-def order_is_close_to_be_filled(
+def order_at_risk(
         bid_price: Optional[Decimal], ask_price: Optional[Decimal], order: dict
 ) -> bool:
     """
