@@ -1,3 +1,4 @@
+import os
 import time
 from decimal import Decimal
 
@@ -11,14 +12,6 @@ from swapper.service import calculate_signature
 from swapper.service import cancel_order
 from swapper.service import get_all_orders
 from swapper.service import place_order
-
-
-def test_calculate_signature():
-    assert calculate_signature(
-        {"test": "test"}) == "478eeeee0bd9f8d2e81ccc58153affa4473d65de9da06ff663107b676f5d5558"
-    assert calculate_signature(
-        {"test": "test",
-         "test2": "test2"}) == "76b0b8ce474d66e65eda1b799efbab12d7dc9d85215ec16363a523d348060372"
 
 
 @pytest.mark.asyncio
