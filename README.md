@@ -13,7 +13,7 @@ Tests:
 - Bid-ask formula is as follows:
 
     ```python
-    bid_price = (high_price - low_price) / low_price * 100)
+    spread = (high_price - low_price) / low_price * 100)
     ```
 - If existing orders are at risk to be filled with market-price movement, bot cancels them and places new orders.
 
