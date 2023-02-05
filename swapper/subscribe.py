@@ -23,7 +23,7 @@ from swapper.state import State
 logger = logging.getLogger(__name__)
 
 
-@retry(stop=asyncio.CancelledError, retry=retry_if_exception_type(TimeoutException))
+@retry(retry=retry_if_exception_type(TimeoutException))
 async def subscribe(websocket: websockets.WebSocketClientProtocol) -> None:
     """
     Subscribe to the BTCUSDT 1s kline stream. Continuously listen to the websocket and calculate
