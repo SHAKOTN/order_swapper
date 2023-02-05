@@ -115,4 +115,3 @@ async def subscribe(websocket: websockets.WebSocketClientProtocol) -> None:
                 logger.info(
                     f"Placed ASK order: {new_order['orderId']} with {curr_ask_price} price"
                 )
-        # await asyncio.sleep(SLEEP_TIME)

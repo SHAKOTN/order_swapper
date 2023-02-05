@@ -37,4 +37,3 @@ def order_at_risk(
     if order["side"] == SIDE_ASK:
         return Decimal(order["price"]) >= ask_price
     return False
-
