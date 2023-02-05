@@ -1,0 +1,9 @@
+version: "3"
+services:
+
+  voter:
+    build: ./
+    container_name: order_swapper
+    command: ["python", "main.py"]
+    env_file:
+      - .env-example
