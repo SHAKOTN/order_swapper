@@ -1,8 +1,10 @@
 """
 Module that interacts with Binance API
 """
+import asyncio
 import hashlib
 import hmac
+import logging
 import os
 import time
 from decimal import Decimal
@@ -26,6 +28,8 @@ HEADERS = {
     "X-MBX-APIKEY": API_KEY,
     "Content-Type": "application/x-www-form-urlencoded",
 }
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_signature(data: dict) -> str:
@@ -78,9 +82,10 @@ async def get_order(order_id: int) -> dict:
     """
     # Build the request body
     params = {
-        "symbol": "BTCUSDT",
+        "symbol": SYMBOL,
         "orderId": order_id,
         "timestamp": str(int(time.time() * 1000)),
+        "recvWindow": 60000,
     }
 
     async with httpx.AsyncClient() as client:
@@ -101,10 +106,10 @@ async def get_all_orders() -> List[dict]:
     """
     # Build the request body
     params = {
-        "symbol": "BTCUSDT",
+        "symbol": SYMBOL,
         "timestamp": str(int(time.time() * 1000)),
-        # Get all orders from the last 48 hours
-        "startTime": str(int(time.time() * 1000) - 24 * 60 * 60 * 1000),
+        # Get all orders from the last 1 hour
+        "startTime": str(int(time.time() * 1000) - 1 * 60 * 60 * 1000),
         "endTime": str(int(time.time() * 1000)),
     }
 
@@ -119,4 +124,34 @@ async def get_all_orders() -> List[dict]:
     return response.json()
 
 
-# TODO: Cancel order
+async def cancel_order(order_id: int) -> None:
+    """
+    Cancel an order from Binance
+    :param order_id: The order ID
+    """
+    # Get Binance server time to avoid timestamp errors
+    async with httpx.AsyncClient() as client:
+        time_response = await client.get("https://api.binance.com/api/v3/time")
+        if time_response.status_code == 200:
+            timestamp = time_response.json()["serverTime"]
+        else:
+            timestamp = str(int(time.time() * 1000))
+
+    # Build the request body
+    params = {
+        "symbol": SYMBOL,
+        "orderId": order_id,
+        "timestamp": timestamp,
+        "recvWindow": 5000,
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.delete(
+            f"{BINANCE_REST_API_BASE_URL}/order",
+            # Send the signature as a query param
+            params={**params, "signature": calculate_signature(params)},
+            headers=HEADERS,
+        )
+        if response.status_code == 200:
+            logger.info(f"Order {order_id} cancelled successfully")
+        else:
+            logger.error(f"Error cancelling order {order_id}: {response.json()}")

@@ -12,11 +12,9 @@ from swapper.constants import SIDE_BID
 class State:
     orders: dict = field(default_factory=dict)
 
-    def add_order(self, order: dict) -> None:
-        self.orders[order["orderId"]] = order
-
-    def remove_inactive_order(self, order_id: int) -> None:
-        self.orders.pop(order_id, None)
+    def add_orders(self, orders: List[dict]) -> None:
+        for order in orders:
+            self.orders[order["orderId"]] = order
 
     def get_active_orders(self) -> Optional[List[dict]]:
         return [

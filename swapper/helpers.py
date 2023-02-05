@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Optional
 
 from swapper.constants import SIDE_ASK
 from swapper.constants import SIDE_BID
@@ -25,11 +26,15 @@ def calculate_ask_price_based_on_spread(high_price: Decimal, spread: Decimal) ->
     return Decimal(high_price * (1 + spread / 100))
 
 
-def order_is_close_to_be_filled(price: Decimal, order: dict) -> bool:
+def order_is_close_to_be_filled(
+        bid_price: Optional[Decimal], ask_price: Optional[Decimal], order: dict
+) -> bool:
     """
     Check if the order is close to be filled.
     """
     if order["side"] == SIDE_BID:
-        return price >= Decimal(order["price"])
-    elif order["side"] == SIDE_ASK:
-        return price <= Decimal(order["price"])
+        return Decimal(order["price"]) <= bid_price
+    if order["side"] == SIDE_ASK:
+        return Decimal(order["price"]) >= ask_price
+    return False
+
