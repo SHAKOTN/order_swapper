@@ -8,6 +8,7 @@ import os
 import time
 from decimal import Decimal
 from typing import List
+from typing import Optional
 from typing import Union
 
 import httpx
@@ -74,31 +75,6 @@ async def place_order(side: Union[SIDE_BID, SIDE_ASK], price: Decimal) -> dict:
     return response.json()
 
 
-async def get_order(order_id: int) -> dict:
-    """
-    Get an order from Binance
-    :param order_id: The order ID
-    """
-    # Build the request body
-    params = {
-        "symbol": SYMBOL,
-        "orderId": order_id,
-        "timestamp": str(int(time.time() * 1000)),
-        "recvWindow": 60000,
-    }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{BINANCE_REST_API_BASE_URL}/order",
-            # Send the signature as a query param
-            params={**params, "signature": calculate_signature(params)},
-            headers=HEADERS,
-        )
-        # TODO: Better error handling
-        response.raise_for_status()
-    return response.json()
-
-
 async def get_all_orders() -> List[dict]:
     """
     Get all orders from Binance
@@ -123,7 +99,7 @@ async def get_all_orders() -> List[dict]:
     return response.json()
 
 
-async def cancel_order(order_id: int) -> None:
+async def cancel_order(order_id: int) -> Optional[dict]:
     """
     Cancel an order from Binance
     :param order_id: The order ID
@@ -154,3 +130,6 @@ async def cancel_order(order_id: int) -> None:
             logger.info(f"Order {order_id} cancelled successfully")
         else:
             logger.error(f"Error cancelling order {order_id}: {response.json()}")
+            return
+
+    return response.json()
